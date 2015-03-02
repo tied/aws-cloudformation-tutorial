@@ -1,4 +1,18 @@
-# My CFN Tutorial
+# CFN Tutorial & Best Practices
+
+Welcome to the guide. This guide will attempt to quickly help you use AWS Cloudformation, define some of the best practices and caveats and then lead you to the rest of the documentation that will help you become an expert in Cloudformation usage.
+
+Where possible, I will try and link to the specific pages in the document that you can read if this guide isn't making sense. 
+
+## Basics
+If you're not familiar with AWS, or you haven't done this part, each AWS authored guide has a section on getting started, you might already be an expert however it might also be worth a quick read just to make sure the reader of this guide is in the same place, please have a look at:
+
+http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/GettingStarted.html
+
+## What is Cloudformation?
+
+
+
 
 One of the most common syntax errors in a template is a missing comma between sibling property declarations and between resources.
 
