@@ -63,8 +63,24 @@ Limits are ever changing, whenever new services and updates are released to AWS,
 http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-limits.html
 
 
+## Template Design
+This section is probably the hardest to write becauase of the way Cloudformation can be consumed is almost limitless. What needs to be decided first is the kind of environment that's needed. The following simple questions can govern or inform decisions made at a later stage:
+
+ - Will the template contain Ec2 or other resources?
+ - Will the required environment, consist of more than 2000 lines?
+ - Will the operators of the environment be separate users (Ops / Dev etc)
+ - Is this an existing application located in Ec2 or Locally?
+ 
+ Obviously these questions cannot answer everything about an environment, but they lend direction to the design of stack. There are limitless ways to deploy depending on these answers, however sticking to the following guidelines can help make it easier to decide:
+ 
+From question 1, we hope to obtain a list of components/services that are intended to be used in AWS.
+
+From question 2, if the answer is yes, then consider the Parent/Child (separation) of stacks that conform to various usage, if no, then you can do it in a single template. There are other cases where you may separate the environment from the applications and use CFN only to deploy the environment and something like Jenkins to deploy the application.
+
+
 
 
 If you make an update to an Ec2 Instance Type in Cfn, it will replace the host if the parameter is immutable, that is to say, it must replace the instance. Some of the optional parameters for each resource will only cause a reboot. If you are working with Cfn and Auto-Scaling Launch Configuraitons, you can make changes and it will not affect the running nodes. It's only if you replace them by terminating them or another even takes place, that they will take on the new configuration.
 
 This works well if you are doing green/blue (immutable infra), in which case you just build a new stack, test it, swap the entry points and then cast away the old one once you've validated the new version. If there is an issue, you swap the endpoints back to the previous version.
+
