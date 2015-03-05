@@ -1,0 +1,127 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+
+  "Description": "Deploy a simple Bastion",
+
+  "Parameters": {
+
+    "BastionKey" : {
+      "Description" : "EC2 Key Pair for Bastion Access",
+      "Type" : "String",
+      "Default" : "bastion-key", 
+      "MinLength": "1",
+      "MaxLength": "64",
+      "AllowedPattern" : "[-_ a-zA-Z0-9]*",
+      "ConstraintDescription" : "can contain only alphanumeric characters, spaces, dashes and underscores."
+    },
+    
+    "VpcId" : {
+      "Type": "String",
+      "Description" : "ID of the VPC you are deploying to.",
+      "Default" : "vpc-13cb3776"     
+    },
+    
+    "AvailabilityZone1" : {
+      "Description" : "AZ to use for VPN",
+      "Type" : "String"
+    },
+
+    "InstanceType" : {
+      "Description" : "Instance type for VPN nodes.",
+      "Type" : "String",
+      "Default" : "t1.micro",
+      "AllowedValues" : [ 
+        "t1.micro",
+        "m1.small",
+        "c1.medium"
+      ],
+      "ConstraintDescription" : "Acceptable values are t1.micro, m1.small or c1.medium"
+    },
+    
+    "PubNet01" : {
+      "Description" : "A Public VPC subnet ID.",
+      "Type": "String",
+      "Default" : "subnet-60b87d17"
+    },
+    
+    "LmnPublic" : {
+      "Description" : "Address range in CIDR format for LMN access to resources.",
+      "Type" : "String",
+      "ConstraintDescription" : "Must be a valid CIDR"
+    }
+    
+  },
+
+  "Mappings" : {
+    
+    "Ami" : {
+      "us-east-1"      : { "AMI" : "ami-54cf5c3d" },
+      "us-west-2"      : { "AMI" : "ami-af86c69f" },
+      "us-west-1"      : { "AMI" : "ami-b63210f3" },
+      "eu-west-1"      : { "AMI" : "ami-3c5f5748" },
+      "ap-southeast-1" : { "AMI" : "ami-ba7538e8" },
+      "ap-southeast-2" : { "AMI" : "ami-b6df4e8c" },
+      "ap-northeast-1" : { "AMI" : "ami-5d7dfa5c" },
+      "sa-east-1"      : { "AMI" : "ami-89c81394" }
+    }
+  },
+
+
+  "Resources": {
+           
+    "SimpleBastion" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "BastionKey" },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "ImageId" : { "Fn::FindInMap" : [ "Ami", { "Ref" : "AWS::Region" }, "AMI" ]},
+        "NetworkInterfaces" : [ 
+          { "DeviceIndex" : "0",
+            "AssociatePublicIpAddress" : "true",
+            "DeleteOnTermination" : "true",
+            "SubnetId" : { "Ref" : "PubNet01" },
+            "GroupSet" : [ { "Ref" : "SimpleBastionSG" } ]
+          }
+        ]
+      }
+    },
+        
+    "SimpleBastionSG" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Rules for allowing access to this Bastion from LMN",
+        "VpcId" : { "Ref" : "VpcId" }
+      }
+    },
+    
+    "AllowSshFromPublic" : {
+      "Type" : "AWS::EC2::SecurityGroupIngress",
+      "Properties" : {
+        "GroupId" : { "Ref" : "SimpleBastionSG" },
+        "IpProtocol" : "tcp", 
+		"FromPort" : "22",  
+		"ToPort" : "22",  
+		"CidrIp" : { "Ref" : "LmnPublic" }
+      }
+    }
+  },
+
+
+  "Outputs" : {
+    
+	"BastionDNS" : {
+      "Value" : {
+        "Fn::GetAtt" : [ "SimpleBastion", "PublicDnsName" ]
+      },
+      "Description" : "Public DNS Name of our Bastion."
+    },
+    
+    "BastionPublicIP" : {
+      "Value" : {
+        "Fn::GetAtt" : [ "SimpleBastion", "PublicIp" ]
+      },
+      "Description" : "Public IP Name of our Bastion."
+    }
+    
+  }
+}
