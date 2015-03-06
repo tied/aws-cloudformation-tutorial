@@ -191,3 +191,67 @@ Using mappings in addition to this, you could also run this template in multiple
 ```
 
 In the case above, we could have run this in us-west-2 and we'd have ended up with ami-9d23aeea as the AMI being used for the bastion, if we'd used eu-west-1, we'd have been using ami-dfc39aef. These images are identical but they are bound to the region they're in, so when you're making templates that are required to run in multiple regions the AMIs need to be replicated.
+
+## Use Nested Stacks to Reuse Common Template Patterns
+
+Rather than repeat what has already been discussed in the blog below, it's definitely beneficial to group your templates:
+http://awsbits.blogspot.co.uk/2015/01/basic-cloudformation-template-design.html
+
+At a high level, we've found that we can group in various ways, however the demarcation between doing it in CloudFormation or doing it in a higher level automation tool does help govern template heirarchy. The second paragraph in the AWS best practice goes further and suggests abstracting single functions into a template that is reused by multiple stacks/users, the owner of that template can then update all ELBs in the estate just by updating the single template - which of course means all users of the template will need to be notified as they'll need to update their stacks, unless they're joined in the parent/child examples given in the steps and on the blog post.
+
+Step 2 introduces the condept of using the AWS::CloudFormation::Stack resource:
+https://gitlab.com/cloudformation/tutorial/tree/master/step2
+
+## Do Not Embed Credentials in Your Templates
+Absolute no no.
+Enough said!
+But as stated, where it's unavoidable use the NoEcho value to prevent people reading the credential from the CloudFormation Management Console. If a user does get a copy of the templates and you do hard code passwords, they'll be able to read them in plain text. It is far better to never set the default for these fields and only enter them at the point they're needed, whilst using the NoEcho function as well.
+
+## Use Parameter Constraints
+Drawing on best practice above, you could use something like this, which uses NoEcho as well as constraints to force the password to be complex.
+
+```sh
+"SomePassword" : {
+      "NoEcho": "true",
+      "Description" : "The database admin account password",
+      "Type": "String",
+      "MinLength": "8",
+      "MaxLength": "41",
+      "AllowedPattern" : "[a-zA-Z0-9]*",
+      "ConstraintDescription" : "must contain only alphanumeric characters."
+},
+```
+
+Note there is no default field here. These constraints can be applied to other Paramters, like this Environment Paramter:
+```sh
+"Environment" : {
+      "Description" : "Stack environment",
+      "Type": "String",
+      "Default": "test",
+      "AllowedValues" : ["prod", "test"],
+      "ConstraintDescription" : "must specify 'prod' or 'test', no other values are allowed."
+},
+```
+
+## Use AWS::CloudFormation::Init to Deploy Software Applications on Amazon EC2 Instances
+This is a very valuable tool. Initially we attempted to do everything with it, however as time goes by, it's better to find a demarcation point between preparing a system and configuring/installing applications. Take user creation for example, or maybe LDAP database population, or maybe even configuring a Jenkins host, while it is possible to do this in CloudFormation, it can actually be easier and more fruitful if the installation and configuration are moved to more powerful tools like Puppet, Chef or Ansible. The following scenario is one we have tried and tested for an application that needs scaling:
+
+Provision Environment with CFN: AZs, Network Routes, Subnets, Security Groups, IAM Roles, Tags (Tags is the demarcation between the team that provisions the environment and those that provision the app)
+Provision the App: Using Jenkins, run a CFN template that uses values from the environment above
+
+Jenkins ties the two work flows together using tags, we can re-deploy the applicaiton again and again into multiple stacks and the only change is the DNS/LoadBalancer entry point for the applicaiton. 
+
+## Validate Templates Before Using Them
+
+
+## Manage All Stack Resources Through AWS CloudFormation
+
+
+## Use Stack Policies
+
+
+## Use AWS CloudTrail to Log AWS CloudFormation Calls
+
+
+## Use Code Reviews and Revision Controls to Manage Your Templates
+
