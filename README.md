@@ -90,6 +90,104 @@ The same resource here could be deployed within a larger stack, or on it's own. 
 ## Use IAM to Control Access
 While this section talks about he benefits of restricting what users can do with CloudFormation, you can also use CloudFormation to provision IAM Resources. IAM Roles are used by instances as a replacement to storing credentials on the host. For example, during the deploy of your first stack (let's call it a management tier), you may have all your configuration files in S3. To access S3, you could use keys/credentials, however that isn't safe to store on your host. The safer way is to create a role that can be applied to the host when it's built. The role will contain 'GetObject' for the bucket that hosts the configuration files allowing the instance to build from config files located in S3.
 
+## Verify Quotas for All Resource Types
+There have been a few occasions where limits have been hit and CloudFormation 'CreateStack' functions have failed. It is simple enough to request limit extentions through the console, however it is also good to understand whether limit increases or architectural changes are needed to avoid this scenario. Prior to deploying anything into your VPC, work out what the limits are and whether you have enough headroom. Trusted Advisor can be used to assist with this task, making it easier to find these figures. If there is no access to Trusted Advisor, the same details can be taken from the Ec2 > Limits section of the console.
 
+## Reuse Templates to Replicate Stacks in Multiple Environments
+Adding Mappings, Conditions and Parameters to templates mean that you can use a single set (parent/child) of templates to deploy multiple environments in the same region, or even in different region if you make use of mappings to 'find' the correct values for the region.
+Here is an example of a condition that uses a parameter to govern the type of instance that will be deployed:
 
+```sh
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description" : "Some stack that does some thing.",
 
+  "Parameters" : {
+    "StackType" : {
+      "Description": "Allowed values are 'dev', 'qa' or 'prd'. You must specify the stack type.",
+      "Type": "String",
+      "AllowedValues" : ["dev", "qa", "prd"]
+    }
+  },
+
+  "Conditions" : {
+    
+    "BuildDev" : {
+      "Fn::Equals" : [ { "Ref" : "StackType"}, "dev"]
+    },
+    
+    "BuildQa" : {
+      "Fn::Equals" : [ { "Ref" : "StackType"}, "qa"]
+    },
+            
+    "BuildPrd" : {
+       "Fn::Equals" : [ { "Ref" : "StackType"}, "prd" ]
+    }
+  
+  },
+  
+  "Resources": {
+    
+    "BastionInstance" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "InstanceType" : 
+          { "Fn::If" : [ "BuildPrd", "m3.large",
+           { "Fn::If" : [ "BuildQa","m1.small", 
+             "t1.micro" 
+           ]}
+        ]},
+        "ImageId" : { "Fn::FindInMap" : [ "ImageMap", { "Ref" : "AWS::Region" }, "BastionAMI" ]},
+        "SecurityGroups" : [{ "Ref" : "BastionSecurityGroup" } ],
+        "SubnetId" : { "Ref" : "PubNet01" },
+        "AssociatePublicIpAddress" : "true",
+      }
+    }
+  }
+  
+}
+```
+Here, we're using a function that will allow us to specify the type of environment that we're going to provision, if we're making a 'prd' environment, then the bastion will get an m3.large instance because the 'BuildPrd' condition will be true ('prd'). Think of this like an IF loop, if the BuildPrd condition wasn't true, we move on to the next action, which is another IF statement that asks, 'ok, then is it QA?'. If BuildQa is true, then we get an m1.small instance type and if that condition wasn't met, for all other environments (in this case there is no parameter constraint for StackType, so it could be a value of 'dev' or 'notdev' the instance will be a t1.micro.
+
+Obviously, this isn't necessarily a real world scenario that we'd suggest using for Bastions, but it shows how we can be dynamic about the resource provisioned using a single template for multiple regions and/or environments.
+
+Using mappings in addition to this, you could also run this template in multiple regions by 'Finding' the relevant AMI ID for the region you're working in, like this:
+
+```sh
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description" : "Some stack that does some thing.",
+
+  "Mappings" : {
+    
+    "ImageMap" : {
+      "eu-west-1" : { "NatAMI" : "ami-14913f63", "BastionAMI" : "ami-9d23aeea", "JenkinsAMI" : "ami-9d23aeea", "GitLabAMI" : "ami-9d23aeea", "LdapAMI" : "ami-9d23aeea" },
+      "us-west-2" : { "NatAMI" : "ami-290f4119", "BastionAMI" : "ami-dfc39aef", "JenkinsAMI" : "ami-dfc39aef", "GitLabAMI" : "ami-dfc39aef", "LdapAMI" : "ami-dfc39aef" }
+    }
+    
+  },
+
+  "Resources": {
+    
+    "BastionInstance" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "KeyName" },
+        "InstanceType" : 
+          { "Fn::If" : [ "BuildPrd", "m3.large",
+           { "Fn::If" : [ "BuildQa","m1.small", 
+             "t1.micro" 
+           ]}
+        ]},
+        "ImageId" : { "Fn::FindInMap" : [ "ImageMap", { "Ref" : "AWS::Region" }, "BastionAMI" ]},
+        "SecurityGroups" : [{ "Ref" : "BastionSecurityGroup" } ],
+        "SubnetId" : { "Ref" : "PubNet01" },
+        "AssociatePublicIpAddress" : "true",
+      }
+    }
+  }
+}
+```
+
+In the case above, we could have run this in us-west-2 and we'd have ended up with ami-9d23aeea as the AMI being used for the bastion, if we'd used eu-west-1, we'd have been using ami-dfc39aef. These images are identical but they are bound to the region they're in, so when you're making templates that are required to run in multiple regions the AMIs need to be replicated.
