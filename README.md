@@ -64,23 +64,11 @@ http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cloudformation-lim
 
 
 ## Template Design
-This section is probably the hardest to write becauase of the way Cloudformation can be consumed is almost limitless. What needs to be decided first is the kind of environment that's needed. The following simple questions can govern or inform decisions made at a later stage:
+This section is probably the hardest to write becauase the ways in which Cloudformation can be consumed are very broad. What needs to be decided first is the kind of environment that's needed. Sometimes it is sufficient to use only Cloudformation to complete the configuration and deployment of a service.
+A scenario here could be that we want to deploy 2 LDAP servers into the VPC that we own, in which case we could configure these purely using Cloudformation, or they could be part of a bigger management stack that would deploy multiple tiers and services, most likely from separate child templates linked together by a parent.
 
- - Will the template contain Ec2 or other resources?
- - Will the required environment, consist of more than 2000 lines?
- - Will the operators of the environment be separate users (Ops / Dev etc)
- - Is this an existing application located in Ec2 or Locally?
- 
- Obviously these questions cannot answer everything about an environment, but they lend direction to the design of stack. There are limitless ways to deploy depending on these answers, however sticking to the following guidelines can help make it easier to decide:
- 
-From question 1, we hope to obtain a list of components/services that are intended to be used in AWS.
+The following steps in this repo are an intended fast track into seeing how templates and Cloudformation usage can evolve over time. At the beginning of any project most templates are a single file, however over time and with discovery of new options or services that are needed, templates split apart and operate in a Parent/Child model, or become separate entities managed by a higher level orchestration tool, maybe Jenkins.
 
-From question 2, if the answer is yes, then consider the Parent/Child (separation) of stacks that conform to various usage, if no, then you can do it in a single template. There are other cases where you may separate the environment from the applications and use CFN only to deploy the environment and something like Jenkins to deploy the application.
+If you intend to follow the guide because you can't wait to get your hands dirty, it is worth coming back and reading the rest of this page to understand some of the pitfalls and caveats of using Cloudformation as there are some activities that aren't obvious which can influence the way you deploy, or even break your existing resources.
 
-
-
-
-If you make an update to an Ec2 Instance Type in Cfn, it will replace the host if the parameter is immutable, that is to say, it must replace the instance. Some of the optional parameters for each resource will only cause a reboot. If you are working with Cfn and Auto-Scaling Launch Configuraitons, you can make changes and it will not affect the running nodes. It's only if you replace them by terminating them or another even takes place, that they will take on the new configuration.
-
-This works well if you are doing green/blue (immutable infra), in which case you just build a new stack, test it, swap the entry points and then cast away the old one once you've validated the new version. If there is an issue, you swap the endpoints back to the previous version.
 
