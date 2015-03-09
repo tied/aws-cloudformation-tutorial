@@ -112,7 +112,18 @@
       "Properties" : {
         "GroupDescription" : "Rules for allowing access to this Amazon Linux Instance",
         "VpcId" : { "Ref" : "VpcId" }
+    },
+    
+    "AllowSshFromPublic" : {
+      "Type" : "AWS::EC2::SecurityGroupIngress",
+      "Properties" : {
+        "GroupId" : { "Ref" : "SimpleInstanceSg" },
+        "IpProtocol" : "tcp", 
+		"FromPort" : "22",  
+		"ToPort" : "22",  
+		"CidrIp" : { "Ref" : "YourPublicRange" }
       }
+    }
 
   },
 
