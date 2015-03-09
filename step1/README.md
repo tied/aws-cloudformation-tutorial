@@ -58,4 +58,4 @@ These details need to be filled in, otherwise stack creation fails, whereas in t
 # Results
 
 The final results of running the template will look similar to this, ignore the fact that the IP address would be wrong and that there is mention of the NACL, this just highlights that we've installed an Ec2 instance with a public IP that you can use some form of TCP (ssh in this case) to get to.
-![Image of Resources](../images/sg.png)
+![Image of Resources](/images/sg.png)
