@@ -92,12 +92,9 @@
           [ "http://s3-", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "CfnS3Bucket" }, "/", { "Ref" : "Step" }, "/simple-instance-resources.cfn.template"]
         ]},
         "Parameters" : {
-          "ProjectName" 					: { "Ref" : "ProjectName" },
-          "EnvSuffix"	       				: { "Ref" : "EnvSuffix" },
           "VpcId"            				: { "Ref" : "VpcId" },
           "AvailabilityZone1"            	: { "Ref" : "AvailabilityZone1" },
           "InternetGateway"    				: { "Ref" : "InternetGateway" },
-          "VpnGateway"            			: { "Ref" : "VpnGateway" },
           "PubNet01"            			: { "Ref" : "PubNet01" },
           "YourPublicRange"            		: { "Ref" : "YourPublicRange" }
         }
@@ -111,7 +108,7 @@
           [ "http://s3-", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "CfnS3Bucket" }, "/", { "Ref" : "Step" }, "/simple-instance-hosts.cfn.template"]
         ]},
         "Parameters" : {
-          "BastionKey"            			: { "Ref" : "BastionKey" },
+          "KeyName"            			    : { "Ref" : "KeyName" },
           "InstanceType"            	    : { "Ref" : "InstanceType" },
           "YourPublicRange"            		: { "Ref" : "YourPublicRange" },
           "SimpleInstanceSg"				: { "Fn::GetAtt" : [ "ResourceStack", "Outputs.SimpleInstanceSg" ] },
