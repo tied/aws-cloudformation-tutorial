@@ -1,24 +1,12 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
 
-  "Description": "Deploy a simple Bastion",
+  "Description": "Deploy a simple Amazon Linux Instance, using multiple templates to demonstrate parent/child relationships. This template assumes you already have a VPC and IGW created.",
 
   "Parameters": {
-    
-    "ProjectName": {
-      "Description": "The generic Stack project name",
-      "Type": "String",
-      "Default" : "simple"
-    },
-    
-    "EnvSuffix": {
-      "Description": "The key of the template for the EB resources and application substack",
-      "Type": "String",
-      "Default": "bastion"
-    },
 
     "KeyName" : {
-      "Description" : "EC2 Key Pair for Generic EC2 Instance Access that has already been created.",
+      "Description" : "EC2 Key Pair for SSH Access, you must have created these prior to running this.",
       "Type" : "String",
       "Default" : "your-key-name-goes-here", 
       "MinLength": "1",
@@ -29,34 +17,23 @@
     
     "VpcId" : {
       "Type": "String",
-      "Description" : "ID of the VPC you are deploying to.",
-      "Default" : "vpc-13cb3776"     
+      "Description" : "ID of the VPC you are deploying to. You must have a VPC created already."
     },
     
     "AvailabilityZone1" : {
-      "Description" : "AZ to use for VPN",
-      "Type" : "String",
-      "Default" : "us-west-2a"
+      "Description" : "The name of the AZ in the region this is being deployed, like us-west-2a.",
+      "Type" : "String"
     },
     
     "InternetGateway": {
       "Description": "The ID of the Internet Gateway attached to the VPC.",
       "Type": "String",
       "MinLength": "1",
-      "MaxLength": "255",
-      "Default" : "igw-b6f911d3"
+      "MaxLength": "255"
     },
     
-    "VpnGateway": {
-      "Description": "The ID of the VPN Gateway attached to the VPC that provides connectivity to LMN C1.",
-      "Type": "String",
-      "MinLength": "1",
-      "MaxLength": "255",
-      "Default" : "vgw-8470ad9a"
-    },
-
-    "BastionInstanceType" : {
-      "Description" : "Instance type for VPN nodes.",
+    "InstanceType" : {
+      "Description" : "Instance type for node that's being created.",
       "Type" : "String",
       "Default" : "t1.micro",
       "AllowedValues" : [ 
@@ -68,14 +45,13 @@
     },
     
     "PubNet01" : {
-      "Description" : "A Public VPC subnet ID. Specified as x.x.x.x/x",
+      "Description" : "A Public VPC subnet ID where you deploy the instance.",
       "Type": "String"
     },
     
     "CfnS3Bucket" : {
-      "Description": "Put the name of your bucket here.",
-      "Type" : "String",
-      "Default" : "your-bucket-name-here"
+      "Description": "Put the name of the bucket you are using to carry out this tutorial here.",
+      "Type" : "String"
     },
     
     "Step" : {
@@ -84,8 +60,8 @@
       "AllowedValues" : ["step1", "step2", "step3", "step4"],
     }
     
-    "LmnPublic" : {
-      "Description" : "Address range in CIDR format for LMN access to resources.",
+    "YourPublicRange" : {
+      "Description" : "Address range in CIDR format for your public address range for access to the instance.",
       "Type" : "String",
       "ConstraintDescription" : "Must be a valid CIDR"
     }
@@ -113,7 +89,7 @@
       "Type" : "AWS::CloudFormation::Stack",
       "Properties" : {
         "TemplateURL" : { "Fn::Join" : ["",
-          [ "http://s3-", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "CfnS3Bucket" }, "/", { "Ref" : "Step" }, "/simple-bastion-resources.cfn.template"]
+          [ "http://s3-", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "CfnS3Bucket" }, "/", { "Ref" : "Step" }, "/simple-instance-resources.cfn.template"]
         ]},
         "Parameters" : {
           "ProjectName" 					: { "Ref" : "ProjectName" },
@@ -123,7 +99,7 @@
           "InternetGateway"    				: { "Ref" : "InternetGateway" },
           "VpnGateway"            			: { "Ref" : "VpnGateway" },
           "PubNet01"            			: { "Ref" : "PubNet01" },
-          "LmnPublic"            			: { "Ref" : "LmnPublic" }
+          "YourPublicRange"            		: { "Ref" : "YourPublicRange" }
         }
       }
     }, 
@@ -132,13 +108,13 @@
       "Type" : "AWS::CloudFormation::Stack",
       "Properties" : {
         "TemplateURL" : { "Fn::Join" : ["",
-          [ "http://s3-", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "CfnS3Bucket" }, "/", { "Ref" : "Step" }, "/simple-bastion-hosts.cfn.template"]
+          [ "http://s3-", { "Ref" : "AWS::Region" }, ".amazonaws.com/", { "Ref" : "CfnS3Bucket" }, "/", { "Ref" : "Step" }, "/simple-instance-hosts.cfn.template"]
         ]},
         "Parameters" : {
           "BastionKey"            			: { "Ref" : "BastionKey" },
-          "BastionInstanceType"            	: { "Ref" : "BastionInstanceType" },
-          "LmnPublic"            			: { "Ref" : "LmnPublic" },
-          "SimpleBastionSG"					: { "Fn::GetAtt" : [ "ResourceStack", "Outputs.SimpleBastionSG" ] },
+          "InstanceType"            	    : { "Ref" : "InstanceType" },
+          "YourPublicRange"            		: { "Ref" : "YourPublicRange" },
+          "SimpleInstanceSg"				: { "Fn::GetAtt" : [ "ResourceStack", "Outputs.SimpleInstanceSg" ] },
           "PubNet01"						: { "Fn::GetAtt" : [ "ResourceStack", "Outputs.PubNet01" ] }
         }
       }
