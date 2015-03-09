@@ -119,7 +119,7 @@
 
   "Outputs" : {
     
-	"PubNet01" : {
+    "PubNet01" : {
       "Value" : { "Ref" : "PubSubnet1" },
       "Description" : "Public SubnetId."
     },
