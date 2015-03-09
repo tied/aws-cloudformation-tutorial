@@ -20,9 +20,9 @@ If you follow this formate then the templates will not need editing in anyway an
 https://s3-{region}.amazonaws.com/{yourbucket}/step{number}/{template}
 
  * region is like = us-west-2
-yourbucket = the name you gave your bucket
-number = in this excersise that would be 1
-template = the file name, fo rthis it's simple-stack.template
+ * yourbucket = the name you gave your bucket
+ * number = in this excersise that would be 1
+ * template = the file name, fo rthis it's simple-stack.template
 
 ## Using the console
 
@@ -34,22 +34,24 @@ aws cloudformation create-stack \
 --stack-name your-stack-name \
 --template-body file://sample-stack.template \
 --parameters \
-ParameterKey=AvailabilityZone1,ParameterValue=$AWS_AZ01 \
-ParameterKey=AvailabilityZone2,ParameterValue=$AWS_AZ02 \
-ParameterKey=AvailabilityZone3,ParameterValue=$AWS_AZ03 \
-ParameterKey=KeyName,ParameterValue=artemis-key \
-ParameterKey=PrivateSubnet1,ParameterValue=$PRIVNET01 \
-ParameterKey=PrivateSubnet2,ParameterValue=$PRIVNET02 \
-ParameterKey=PrivateSubnet3,ParameterValue=$PRIVNET03 \
-ParameterKey=Project,ParameterValue=$PROJECT \
-ParameterKey=PublicSubnet1,ParameterValue=$PUBNET01 \
-ParameterKey=PublicSubnet2,ParameterValue=$PUBNET02 \
-ParameterKey=PublicSubnet3,ParameterValue=$PUBNET03 \
-ParameterKey=StackType,ParameterValue=$STACKTYPE \
-ParameterKey=ArtemisWebSg,ParameterValue=$WEBSG \
-ParameterKey=ArtemisAdminSg,ParameterValue=$ADMINSG \
-ParameterKey=WebInstanceRole,ParameterValue=$WEBROLE \
-ParameterKey=AdminInstanceRole,ParameterValue=$ADMINROLE \
-ParameterKey=BuildNo,ParameterValue=$BUILD_NUMBER
+ParameterKey=AvailabilityZone1,ParameterValue=name_of_your_az \
+ParameterKey=KeyName,ParameterValue=your_key_name \
+ParameterKey=YourPublicRange,ParameterValue=your_public_cidr \
+ParameterKey=PubNet01,ParameterValue=the_id_of_your_pub_net \
+ParameterKey=VpcId,ParameterValue=the_id_of_your_vpc
 
 ```
+
+## Similarities
+
+In both of these methods for creating a stack, you need to fill in the values that are asked for, these are:
+
+ * VpcId ( something like vpc-123adf2a )
+ * AvailablilityZone ( something like us-west-2 )
+ * KeyName ( a key you have created like sample-key, using the name you gave it in the Keys console )
+ * PubNet01 ( the ID of a subnet that is public, which means it has an IGW attached and has the default set to provision a public IP to hosts )
+ * YourPublicRange ( this must be specified as a valid Cidr like 221.221.221.0/24 )
+ 
+ 
+These details need to be filled in, otherwise stack creation fails, whereas in the template you can see that the InstanceType will provide a value since it has a 'default' specification. Also not the mappings section will provide a value for the AMI automatically since it has values in the map. This example is the simplest to show how parameters can be transferred into meaningful settings when creating resources. Of course you could remove all of the parameters because you only need the Resource section, however that would mean vast amounts of repetition. Think of it like script variables/functions.
+ 
