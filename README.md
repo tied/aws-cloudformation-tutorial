@@ -70,8 +70,11 @@ A scenario here could be that we want to deploy 2 LDAP servers into the VPC that
 The following steps in this repo are intended as a fast track into seeing how templates and Cloudformation usage can evolve over time. At the beginning of any project most templates are a single file, however over time and with discovery of new options or services that are needed, templates split apart and operate in a Parent/Child model, or become separate entities managed by a higher level orchestration tool, maybe Jenkins.
 
 https://gitlab.com/cloudformation/tutorial/tree/master/step1
+
 https://gitlab.com/cloudformation/tutorial/tree/master/step2
+
 https://gitlab.com/cloudformation/tutorial/tree/master/step3
+
 https://gitlab.com/cloudformation/tutorial/tree/master/step4
 
 If you intend to follow the guide because you can't wait to get your hands dirty, it is worth coming back and reading the rest of this page to understand some of the pitfalls and caveats of using Cloudformation as there are some activities that aren't obvious which can influence the way you deploy, or even break your existing resources.
@@ -254,4 +257,3 @@ Jenkins ties the two work flows together using tags, we can re-deploy the applic
 
 
 ## Use Code Reviews and Revision Controls to Manage Your Templates
-
