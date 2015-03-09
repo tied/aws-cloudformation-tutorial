@@ -6,4 +6,20 @@ This will create an Amazon Linux Instnace that you can ssh to, in this case, the
 
 NOTE: This was deployed into a Public Subnet (one that has an IGW assigned), that already had the 'Automatically assign a Public IP at Launch' set to True. Without these settings, you would need to specify the public IP setting in the template.
 
-You can apply the template directly from the CloudFormation console, if you are cloning this repo, or downloading the files, you can 'browse' to the step 1 sample and run the template.
+## Using the console
+You can apply the template directly from the CloudFormation console, if you are cloning this repo, or downloading the files, you can 'browse' to the step 1 sample template and run the template. It is best if you copy these templates in their folders into S3 in the following way:
+
+yourbucket/
+  step1/templates
+  step2/templates
+  step3/templates
+  step4/templates
+  
+If you follow this formate then the templates will not need editing in anyway and when you run the template you'll be able to chose the 'step' and it'll install the correct resources using CloudFormation. If you chose to place the templates into S3 immediately before attempting these steps you can use the following URL structure to run the first template:
+
+https://s3-{region}.amazonaws.com/{yourbucket}/step{number}/{template}
+
+region is like = us-west-2
+yourbucket = the name you gave your bucket
+number = in this excersise that would be 1
+template = the file name, fo rthis it's simple-bastion.template
