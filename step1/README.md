@@ -54,4 +54,8 @@ In both of these methods for creating a stack, you need to fill in the values th
  
  
 These details need to be filled in, otherwise stack creation fails, whereas in the template you can see that the InstanceType will provide a value since it has a 'default' specification. Also not the mappings section will provide a value for the AMI automatically since it has values in the map. This example is the simplest to show how parameters can be transferred into meaningful settings when creating resources. Of course you could remove all of the parameters because you only need the Resource section, however that would mean vast amounts of repetition. Think of it like script variables/functions.
- 
+
+# Results
+
+The final results of running the template will look similar to this, ignore the fact that the IP address would be wrong and that there is mention of the NACL, this just highlights that we've installed an Ec2 instance with a public IP that you can use some form of TCP (ssh in this case) to get to.
+![Image of Resources](../images/sg.png)
