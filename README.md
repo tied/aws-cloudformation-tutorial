@@ -245,15 +245,28 @@ Provision the App: Using Jenkins, run a CFN template that uses values from the e
 Jenkins ties the two work flows together using tags, we can re-deploy the applicaiton again and again into multiple stacks and the only change is the DNS/LoadBalancer entry point for the applicaiton. 
 
 ## Validate Templates Before Using Them
-
+This goes without saying really. Most people usually start with the Console, which automatically verifies the template after putting in the parameters and before actually building/updating a stack. Refere to this page for the usage of the CLI:
+http://docs.aws.amazon.com/cli/latest/reference/cloudformation/validate-template.html
 
 ## Manage All Stack Resources Through AWS CloudFormation
+This is very important!
 
+If you try and delete a security group (as an example) and it has another host using it that is not controlled by CloudFormation, when you try and delete the action will fail, sometimes this is catastrophic and you will be left with the 'ROLLBACK FAILED' condition, see why that's so bad here:
+http://awsbits.blogspot.co.uk/2014/08/the-dreaded-updaterollbackfailed.html
+
+Whenever you want to add or remove anything from a stack/environment, it is best to do it with CloudFormation. This subject looks toward your design choices for the demarcation between using CloudFormation and other higher level automation tools, such as Jenkins. As an example, if you manage security groups and subnets in CloudFormation, you shouldn't begin provisioning them in some other way (manually, or via Jenkins), unless you plan to migrate the strategy for creating them entirely.
 
 ## Use Stack Policies
+Using Stack Policies is another way to protect the environment that you have built using CloudFormation from accidental change or attempted deletion. For example, if your environment uses an RDS backend (msyql or postresql) which you need constantly available (multiple AZ) and backed up (db snapshots), which is managed by a separate team and provisioned by the Ops guys in your team, it is good to protect this from any accidental changes when you begin allowing other members of the organisation to run CloudFormation tasks using an upstream tool, such as Jenkins. Although it would take quite a bit of imagination to do damage to the underlying CloudFormation controlled environment if you have permissions set correctly for other resources, it is still possible, so these policies give it a little extra protection.
 
+As per the documentation, follow the links in the best practices page and read about how to do it.
 
 ## Use AWS CloudTrail to Log AWS CloudFormation Calls
-
+In and of itself, come audit time CloudFormation templates are excellent support for providing a picture of what is and isn't installed/permitted. As CloudFormation is adopted throughout the business and it's used across all all teams in different ways, this tool will assist in tracking who makes the changes. This tied together with other audit trails will produce information on every action ever taken against a stack, which can be vital in Audit, issue troubleshooting, triage and security breach.
 
 ## Use Code Reviews and Revision Controls to Manage Your Templates
+Finally, put the templates in a Revision Control System. Make sure you can check out, check in and branch the code, just like you would for any software application, that way you can operate in the same way, making smaller changes more often as well as having all previous known versions of the architecture and all changes that have been made.
+
+
+# Tutorials
+Now you're armed with a bit of background on CloudFormation and how it can be used, it's worth following the examples to get the feel for creating stacks. Start with Step1 that creates a simple Amazon Linux Instance and allows you to connect to it via SSH.
