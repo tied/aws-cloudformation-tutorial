@@ -1,17 +1,17 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
 
-  "Description": "Deploy resources required for a simple Bastion",
+  "Description": "Deploy resources required for a simple Amazon Linux Instance.",
 
   "Parameters": {
     
     "VpcId" : {
       "Type": "String",
-      "Description" : "ID of the VPC you are deploying to."  
+      "Description" : "ID of the VPC you are deploying to. You must have a VPC created already."
     },
     
     "AvailabilityZone1" : {
-      "Description" : "AZ to use for VPN",
+      "Description" : "The name of the AZ in the region this is being deployed, like us-west-2a.",
       "Type" : "String"
     },
     
@@ -20,29 +20,15 @@
       "Type": "String"
     },
     
-    "VpnGateway": {
-      "Description": "The ID of the VPN Gateway attached to the VPC that provides connectivity to LMN C1.",
-      "Type": "String"
-    },
-    
     "PubNet01" : {
-      "Description" : "A Public VPC subnet ID.",
+      "Description" : "A Public VPC subnet CIDR, note this should be a CIDR and not a subnet ID this time.",
       "Type": "String"
     },
        
-    "LmnPublic" : {
-      "Description" : "Address range in CIDR format for LMN access to resources.",
-      "Type" : "String"
-    },
-    
-    "ProjectName": {
-      "Description": "The generic Stack project name",
-      "Type": "String"
-    },
-    
-    "EnvSuffix": {
-      "Description": "The key of the template for the EB resources and application substack",
-      "Type": "String"
+    "YourPublicRange" : {
+      "Description" : "Address range in CIDR format for your public address range for access to the instance.",
+      "Type" : "String",
+      "ConstraintDescription" : "Must be a valid CIDR"
     }
     
   },
@@ -54,24 +40,14 @@
       "Properties" : {
         "VpcId" : { "Ref" : "VpcId" },
         "AvailabilityZone" : { "Ref" : "AvailabilityZone1" },
-        "CidrBlock" : { "Ref" : "PubNet01" },
-        "Tags" : [
-          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
-          { "Key" : "Network", "Value" : "Public" },
-          { "Key" : "Name", "Value" : { "Fn::Join" : [ "", [ { "Ref" : "EnvSuffix" }, " Public Subnet 1" ] ] } }
-        ]
+        "CidrBlock" : { "Ref" : "PubNet01" }
       }
     },
     
     "PublicRouteTable" : {
       "Type" : "AWS::EC2::RouteTable",
       "Properties" : {
-        "VpcId" : { "Ref" : "VpcId" },
-        "Tags" : [
-          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
-          { "Key" : "Network", "Value" : "Public" },
-          { "Key" : "Name", "Value" : { "Fn::Join" : [ "", [ { "Ref" : "EnvSuffix" }, " Public Route Table" ] ] } }
-        ]
+        "VpcId" : { "Ref" : "VpcId" }
       }
     },
     
@@ -84,15 +60,6 @@
       }
     },
     
-    "PublicRoute2" : {
-      "Type" : "AWS::EC2::Route",
-      "Properties" : {
-        "RouteTableId" : { "Ref" : "PublicRouteTable" },
-        "DestinationCidrBlock" : "10.28.0.0/16",
-        "GatewayId" : { "Ref" : "VpnGateway" }
-      }
-    }, 
-    
     "PubSubnet1RTAssoc" : {
       "Type" : "AWS::EC2::SubnetRouteTableAssociation",
       "Properties" : {
@@ -104,19 +71,14 @@
     "PublicNetworkAcl" : {
       "Type" : "AWS::EC2::NetworkAcl",
       "Properties" : {
-        "VpcId" : { "Ref" : "VpcId" },
-        "Tags" : [         
-          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
-          { "Key" : "Network", "Value" : { "Fn::Join" : [ "", [ { "Ref" : "AWS::StackName" }, "Network Acl" ] ] } },
-          { "Key" : "Name", "Value" : { "Fn::Join" : [ "", [ { "Ref" : "EnvSuffix" }, " Public NACL" ] ] } }
-        ]
+        "VpcId" : { "Ref" : "VpcId" }
       }
     },
     
-    "LmnPublicTcp22ToPublic" : {
+    "YourPublicTcp22ToPublic" : {
       "Type" : "AWS::EC2::NetworkAclEntry",
       "Properties" : {
-        "CidrBlock" : { "Ref" : "LmnPublic" },
+        "CidrBlock" : { "Ref" : "YourPublicRange" },
         "NetworkAclId" : { "Ref" : "PublicNetworkAcl" },
         "Protocol" : "6",
         "RuleAction" : "allow",
@@ -137,7 +99,7 @@
       }
     },
     
-    "PubSubnet1toPublicNAclAssoc" : {
+    "PubSubnet1toPublicNaclAssoc" : {
       "Type" : "AWS::EC2::SubnetNetworkAclAssociation",
 	  "Properties" : {
    		"SubnetId" : { "Ref" : "PubSubnet1" },
@@ -145,18 +107,12 @@
 	  }
     }, 
     
-    "SimpleBastionSG": {
-      "Type": "AWS::EC2::SecurityGroup",
-      "Properties": {
-        "GroupDescription": "SG that public bastions launch into.",
-        "VpcId": { "Ref": "VpcId" },
-        "Tags" : [
-          { "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
-          { "Key" : "Network", "Value" : { "Fn::Join" : [ "", [ { "Ref" : "AWS::StackName" }, "Bastion SG" ] ] } },
-          { "Key" : "Name", "Value" : { "Fn::Join" : [ "", [ { "Ref" : "EnvSuffix" }, " Bastion SG" ] ] } }
-        ]        
+    "SimpleInstanceSg" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Rules for allowing access to this Amazon Linux Instance",
+        "VpcId" : { "Ref" : "VpcId" }
       }
-    } 
 
   },
 
@@ -168,9 +124,9 @@
       "Description" : "Public SubnetId."
     },
     
-    "SimpleBastionSG" : {
-      "Value" : { "Ref" : "SimpleBastionSG" },
-      "Description" : "Public IP Name of our Bastion."
+    "SimpleInstanceSg" : {
+      "Value" : { "Ref" : "SimpleInstanceSg" },
+      "Description" : "Public IP Name of our Amazon Linux Instance."
     }
     
   }
