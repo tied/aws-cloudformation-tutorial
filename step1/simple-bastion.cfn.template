@@ -44,7 +44,7 @@
       "Default" : "subnet-60b87d17"
     },
     
-    "LmnPublic" : {
+    "YourPublicRange" : {
       "Description" : "Address range in CIDR format for your public address range for access to bastion resources.",
       "Type" : "String",
       "ConstraintDescription" : "Must be a valid CIDR"
@@ -101,7 +101,7 @@
         "IpProtocol" : "tcp", 
 		"FromPort" : "22",  
 		"ToPort" : "22",  
-		"CidrIp" : { "Ref" : "LmnPublic" }
+		"CidrIp" : { "Ref" : "YourPublicRange" }
       }
     }
   },
