@@ -57,8 +57,8 @@
     "Step" : {
       "Description" : "Which step are you currently on?",
       "Type" : "String",
-      "AllowedValues" : ["step1", "step2", "step3", "step4"],
-    }
+      "AllowedValues" : ["step1", "step2", "step3", "step4"]
+    },
     
     "YourPublicRange" : {
       "Description" : "Address range in CIDR format for your public address range for access to the instance.",

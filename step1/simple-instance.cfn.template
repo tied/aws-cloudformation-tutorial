@@ -17,8 +17,7 @@
     
     "VpcId" : {
       "Type": "String",
-      "Description" : "ID of the VPC you are deploying to. You must have a VPC created already.",
-      "Default" : "vpc-13cb3776"     
+      "Description" : "ID of the VPC you are deploying to. You must have a VPC created already."
     },
     
     "AvailabilityZone1" : {
