@@ -45,7 +45,7 @@
     },
     
     "PubNet01" : {
-      "Description" : "A Public VPC subnet ID where you deploy the instance.",
+      "Description" : "This should be the CIDR that you want to give to the public subnet that will be created, in the format x.x.x.x/x.",
       "Type": "String"
     },
     
