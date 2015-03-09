@@ -19,7 +19,37 @@ If you follow this formate then the templates will not need editing in anyway an
 
 https://s3-{region}.amazonaws.com/{yourbucket}/step{number}/{template}
 
-region is like = us-west-2
+ * region is like = us-west-2
 yourbucket = the name you gave your bucket
 number = in this excersise that would be 1
-template = the file name, fo rthis it's simple-bastion.template
+template = the file name, fo rthis it's simple-stack.template
+
+## Using the console
+
+In the same way you have the option of using a local or remote file with the Console, you can either use a local or remote (S3) file with the CLI. Generally, putting the files in S3 first is the easiest, if you don't want to keep typing out the URL you caould always make a variable in a shell. Below is the command you can run to create a stack, note that you need to make sure ALL of the parameters have values when you run a script from the CLI. This example uses the template file that is located locally in the same folder you're running this command from, you can substitute this with an S3 URL, much in the same way you can with the Console.
+
+```sh
+
+aws cloudformation create-stack \
+--stack-name your-stack-name \
+--template-body file://sample-stack.template \
+--parameters \
+ParameterKey=AvailabilityZone1,ParameterValue=$AWS_AZ01 \
+ParameterKey=AvailabilityZone2,ParameterValue=$AWS_AZ02 \
+ParameterKey=AvailabilityZone3,ParameterValue=$AWS_AZ03 \
+ParameterKey=KeyName,ParameterValue=artemis-key \
+ParameterKey=PrivateSubnet1,ParameterValue=$PRIVNET01 \
+ParameterKey=PrivateSubnet2,ParameterValue=$PRIVNET02 \
+ParameterKey=PrivateSubnet3,ParameterValue=$PRIVNET03 \
+ParameterKey=Project,ParameterValue=$PROJECT \
+ParameterKey=PublicSubnet1,ParameterValue=$PUBNET01 \
+ParameterKey=PublicSubnet2,ParameterValue=$PUBNET02 \
+ParameterKey=PublicSubnet3,ParameterValue=$PUBNET03 \
+ParameterKey=StackType,ParameterValue=$STACKTYPE \
+ParameterKey=ArtemisWebSg,ParameterValue=$WEBSG \
+ParameterKey=ArtemisAdminSg,ParameterValue=$ADMINSG \
+ParameterKey=WebInstanceRole,ParameterValue=$WEBROLE \
+ParameterKey=AdminInstanceRole,ParameterValue=$ADMINROLE \
+ParameterKey=BuildNo,ParameterValue=$BUILD_NUMBER
+
+```
