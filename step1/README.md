@@ -22,7 +22,7 @@ https://s3-{region}.amazonaws.com/{yourbucket}/step{number}/{template}
  * region is like = us-west-2
  * yourbucket = the name you gave your bucket
  * number = in this excersise that would be 1
- * template = the file name, fo rthis it's simple-stack.template
+ * template = the file name, for this it's simple-instance.cfn.template
 
 ## Using the console
 
